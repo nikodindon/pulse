@@ -96,15 +96,17 @@ class History:
         for fs in filesystems.get("filesystems") or []:
             self.device_buffer("fs", fs["mount"]).push(fs.get("used_pct", 0.0))
 
+        gpu = data.get("gpu") or {}
+        for gpu_index, g in enumerate(gpu.get("gpus") or []):
+            if g.get("util") is not None:
+                self.buffer(f"gpu_util_{gpu_index}").push(g.get("util", 0.0))
+            if g.get("temp"):
+                self.buffer(f"gpu_temp_{gpu_index}").push(g["temp"])
+
         sensors = data.get("sensors") or {}
         if sensors:
             for temp in sensors.get("temps") or []:
                 self.device_buffer("temp", f"{temp['chip']}/{temp['label']}").push(temp["value"])
-            for gpu_index, gpu in enumerate((data.get("gpu") or {}).get("gpus") or []):
-                if gpu.get("util") is not None:
-                    self.buffer(f"gpu_util_{gpu_index}").push(gpu.get("util", 0.0))
-                if gpu.get("temp"):
-                    self.buffer(f"gpu_temp_{gpu_index}").push(gpu["temp"])
 
         processes = data.get("processes") or {}
         if processes:

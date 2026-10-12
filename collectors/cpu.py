@@ -31,7 +31,7 @@ class CpuCollector(Collector):
         for line in read_lines("/proc/stat"):
             if in_cpu_section and line.startswith("cpu"):
                 parts = line.split()
-                fields = [safe_int(p) for p in parts[1:8]]
+                fields = [safe_int(p) for p in parts[1:]]
                 if parts[0] == "cpu":
                     total = fields
                 else:

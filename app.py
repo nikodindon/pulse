@@ -44,16 +44,16 @@ class Sampler(threading.Thread):
         super().__init__(name="pulse-sampler")
         self.registry = registry
         self.interval = interval
-        self._stop = threading.Event()
+        self._stop_event = threading.Event()
         self.latest: dict = {}
         self.tick_count = 0
         self.last_duration = 0.0
 
     def stop(self) -> None:
-        self._stop.set()
+        self._stop_event.set()
 
     def run(self) -> None:
-        while not self._stop.is_set():
+        while not self._stop_event.is_set():
             start = time.monotonic()
             try:
                 payload = self.registry.sample(start)
@@ -63,7 +63,7 @@ class Sampler(threading.Thread):
             self.tick_count += 1
             elapsed = time.monotonic() - start
             self.last_duration = elapsed
-            self._stop.wait(max(0.0, self.interval - elapsed))
+            self._stop_event.wait(max(0.0, self.interval - elapsed))
 
 
 class PulseApp:
