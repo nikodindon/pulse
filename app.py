@@ -78,6 +78,7 @@ class PulseApp:
         self.proc_state = views.ProcessState()
         self.sampler = Sampler(self.registry, refresh)
         self.paused = False
+        self.snapshot: dict = {}
         self.toast = ""
         self.toast_until = 0.0
         self.show_help = False
@@ -144,6 +145,8 @@ class PulseApp:
             return True
         if key == ord("p"):
             self.paused = not self.paused
+            if self.paused:
+                self.snapshot = dict(self.sampler.latest)
             self.notify("paused" if self.paused else "resumed")
             return True
         if key == ord("r"):
@@ -359,7 +362,7 @@ class PulseApp:
             win.refresh()
             return
 
-        data = dict(self.sampler.latest)
+        data = dict(self.snapshot) if self.paused else dict(self.sampler.latest)
         data["history"] = self.history
         if not self.paused:
             self.history.update(self.sampler.latest)
