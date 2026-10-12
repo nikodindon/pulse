@@ -71,6 +71,7 @@ class GpuCollector(Collector):
                     "util_mem": safe_int(gpu["utilization.memory"]),
                     "mem_total": safe_int(gpu["memory.total"]) * 1024 * 1024,
                     "mem_used": safe_int(gpu["memory.used"]) * 1024 * 1024,
+                    "mem_pct": round(100.0 * safe_int(gpu["memory.used"]) / max(1, safe_int(gpu["memory.total"]))) if safe_int(gpu.get("memory.total", 0)) else None,
                     "mem_free": safe_int(gpu["memory.free"]) * 1024 * 1024,
                     "temp": safe_int(gpu["temperature.gpu"]),
                     "power": safe_int(gpu["power.draw"]),
@@ -115,6 +116,7 @@ class GpuCollector(Collector):
                 "util_known": util >= 0,
                 "mem_total": mem_total,
                 "mem_used": mem_used,
+                "mem_pct": round(100.0 * mem_used / mem_total, 1) if mem_total else None,
                 "power": power_watts,
                 "driver": read_text(base + "/driver", "").split("/")[-1],
             })

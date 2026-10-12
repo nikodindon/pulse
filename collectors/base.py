@@ -45,18 +45,28 @@ class Collector:
         self._lock = threading.Lock()
         self.last_error: str | None = None
         self._last_payload: dict | None = None
+        self.status: str = "ok"
+        self.last_run: float = 0.0
+        self.duration: float = 0.0
 
     def collect(self) -> dict:
         raise NotImplementedError
 
     def take(self) -> dict:
         with self._lock:
+            start = time.monotonic()
             try:
                 result = self.collect()
+                self.status = "ok"
                 self.last_error = None
+                self.duration = time.monotonic() - start
+                self.last_run = time.monotonic()
                 return result
-            except Exception as exc:  # a broken probe must not kill the UI
+            except Exception as exc:
+                self.status = "error"
                 self.last_error = f"{type(exc).__name__}: {exc}"
+                self.duration = time.monotonic() - start
+                self.last_run = time.monotonic()
                 return {}
 
     def slow_collect(self) -> dict:

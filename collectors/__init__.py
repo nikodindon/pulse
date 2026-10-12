@@ -53,7 +53,15 @@ class Registry:
         result: dict = {}
         for name, collector in self.collectors.items():
             if now - self._last_run[name] >= self.intervals[name] - 1e-6:
-                result[name] = collector.take()
+                payload = collector.take()
+                payload = dict(payload)
+                payload["_meta"] = {
+                    "status": collector.status,
+                    "last_run": collector.last_run,
+                    "duration": collector.duration,
+                    "error": collector.last_error,
+                }
+                result[name] = payload
                 self._last_run[name] = now
             else:
                 # Not due yet: serve the previous payload so the UI can render
@@ -62,6 +70,13 @@ class Registry:
                     result[name] = collector._last_payload
             payload = result.get(name)
             if payload is not None:
+                payload = dict(payload)
+                payload["_meta"] = {
+                    "status": collector.status,
+                    "last_run": collector.last_run,
+                    "duration": collector.duration,
+                    "error": collector.last_error,
+                }
                 collector._last_payload = payload
         return result
 
